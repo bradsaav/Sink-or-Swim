@@ -70,6 +70,70 @@ void forward_selection(int num_features) {
     cout << "} with an accuracy of " << overall_best_accuracy << "%" << endl;
 }
 
+void backward_elimination(int num_features) {
+    cout << "Running Backward Elimination Algorithm..." << endl;
+
+    // Display the accuracy with no features selected
+    vector<int> no_features;
+    double no_feature_accuracy = stub_evaluation_function(no_features);
+    cout << "Using no features and “random” evaluation, I get an accuracy of " << no_feature_accuracy << "%" << endl;
+
+    vector<int> curr_features(num_features);
+    for (int i = 0; i < num_features; ++i) curr_features[i] = i + 1;
+
+    double best_accuracy = stub_evaluation_function(curr_features);
+    vector<int> best_features = curr_features;
+    vector<int> overall_best_features = best_features;
+    double overall_best_accuracy = best_accuracy;
+
+    cout << "\nStarting search with all features selected: { ";
+    for (int f : curr_features) cout << f << " ";
+    cout << "} Initial accuracy: " << best_accuracy << "%" << endl;
+
+    for (int i = 0; i < num_features - 1; ++i) {
+        double curr_best_accuracy = 0.0;
+        int feature_to_remove = -1;
+
+        for (int feature : curr_features) {
+            vector<int> temp_features = curr_features;
+            temp_features.erase(remove(temp_features.begin(), temp_features.end(), feature), temp_features.end());
+
+            double accuracy = stub_evaluation_function(temp_features);
+            cout << "Using features { ";
+            for (int f : temp_features) cout << f << " ";
+            cout << "} accuracy is " << accuracy << "%" << endl;
+
+            if (accuracy > curr_best_accuracy) {
+                curr_best_accuracy = accuracy;
+                feature_to_remove = feature;
+            }
+        }
+
+        if (feature_to_remove != -1) {
+            curr_features.erase(remove(curr_features.begin(), curr_features.end(), feature_to_remove), curr_features.end());
+            best_accuracy = curr_best_accuracy;
+
+            // Update overall best if current is the best
+            if (best_accuracy > overall_best_accuracy) {
+                overall_best_accuracy = best_accuracy;
+                overall_best_features = curr_features;
+            }
+
+            cout << "Best feature set so far: { ";
+            for (int f : curr_features) cout << f << " ";
+            cout << "} with accuracy " << best_accuracy << "%" << endl << endl;
+        }
+    }
+
+    // Final check for accuracy decrease
+    if (best_accuracy < overall_best_accuracy) {
+        cout << "(Warning, Accuracy has decreased!)" << endl;
+    }
+
+    cout << "Finished search!! The best feature subset is { ";
+    for (int f : overall_best_features) cout << f << " ";
+    cout << "} with an accuracy of " << overall_best_accuracy << "%" << endl;
+}
 int main() {
     srand(static_cast<unsigned int>(time(0)));  // Seed random number generator
 
@@ -84,7 +148,7 @@ int main() {
     if (choice == 1) {
         forward_selection(num_features);
     } else if (choice == 2) {
-        //backward_elimination(num_features);
+        backward_elimination(num_features);
     } else {
         cout << "Invalid choice!" << endl;
     }
