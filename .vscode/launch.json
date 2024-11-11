@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "/Users/brad/Desktop/UCR Computer W: Business Applications/CS170/CS170-Project-2",
+      "program": "/Users/brad/Desktop/UCR Computer W: Business Applications/CS170/CS170-Project-2/build/Debug/outDebug"
+    }
+  ]
+}
