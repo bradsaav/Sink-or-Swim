@@ -35,14 +35,17 @@ int classify(const vector<Instance>& training_data, const Instance& test_instanc
 }
 
 double leave_one_out_validation(const vector<Instance>& dataset, const vector<int>& feature_subset) {
-    int correct_predictions = 0;
+     int correct_predictions = 0;
 
     for (size_t i = 0; i < dataset.size(); ++i) {
-        // Leave out instance `i` for testing
-        vector<Instance> training_data = dataset;
-        Instance test_instance = dataset[i];
-        training_data.erase(training_data.begin() + i);
+        vector<Instance> training_data;
+        for (size_t j = 0; j < dataset.size(); ++j) {
+            if (i != j) {
+                training_data.push_back(dataset[j]);
+            }
+        }
 
+        const Instance& test_instance = dataset[i];
         int predicted_class = classify(training_data, test_instance, feature_subset);
         if (predicted_class == test_instance.class_label) {
             ++correct_predictions;
@@ -74,7 +77,7 @@ vector<Instance> load_data(const string& file_name) {
         double value;
         vector<double> features;
         while (iss >> value) {
-            // Skip the first feature
+            // Skip the first feature if it's always 0
             if (features.empty() && value == 0) {
                 continue;
             }
@@ -89,6 +92,45 @@ vector<Instance> load_data(const string& file_name) {
             cerr << "Warning: Instance with no features found. Skipping." << endl;
         }
     }
+
+     // Normalize features using z-score normalization
+    if (!dataset.empty()) {
+        size_t num_features = dataset[0].features.size();
+        vector<double> means(num_features, 0.0);
+        vector<double> std_devs(num_features, 0.0);
+
+        // Calculate mean for each feature
+        for (const auto& instance : dataset) {
+            for (size_t i = 0; i < num_features; ++i) {
+                means[i] += instance.features[i];
+            }
+        }
+        for (size_t i = 0; i < num_features; ++i) {
+            means[i] /= dataset.size();
+        }
+
+        // Calculate standard deviation for each feature
+        for (const auto& instance : dataset) {
+            for (size_t i = 0; i < num_features; ++i) {
+                std_devs[i] += pow(instance.features[i] - means[i], 2);
+            }
+        }
+        for (size_t i = 0; i < num_features; ++i) {
+            std_devs[i] = sqrt(std_devs[i] / dataset.size());
+        }
+
+        // Normalize each feature value using z-score normalization
+        for (auto& instance : dataset) {
+            for (size_t i = 0; i < num_features; ++i) {
+                if (std_devs[i] != 0) {  // Avoid division by zero
+                    instance.features[i] = (instance.features[i] - means[i]) / std_devs[i];
+                } else {
+                    instance.features[i] = 0.0;  // If all values are the same, normalize to 0
+                }
+            }
+        }
+    }
+
 
     return dataset;
 }
