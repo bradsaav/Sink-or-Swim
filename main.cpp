@@ -62,37 +62,35 @@ vector<Instance> load_data(const string& file_name) {
 
     string line;
     while (getline(file, line)) {
+        // Skip empty lines
+        if (line.empty()) {
+            continue;
+        }
+
         istringstream iss(line);
         Instance instance;
         iss >> instance.class_label;
+
         double value;
+        vector<double> features;
         while (iss >> value) {
-            instance.features.push_back(value);
-        }
-        dataset.push_back(instance);
-    }
-
-    // Normalize features
-    size_t num_features = dataset[0].features.size();
-    for (size_t i = 0; i < num_features; ++i) {
-        double min_val = numeric_limits<double>::max();
-        double max_val = numeric_limits<double>::min();
-
-        for (const auto& instance : dataset) {
-            min_val = min(min_val, instance.features[i]);
-            max_val = max(max_val, instance.features[i]);
+            // Skip the first feature
+            if (features.empty() && value == 0) {
+                continue;
+            }
+            features.push_back(value);
         }
 
-        for (auto& instance : dataset) {
-            instance.features[i] = (instance.features[i] - min_val) / (max_val - min_val);
+        // Ensure that instances with at least one feature are added
+        if (!features.empty()) {
+            instance.features = features;
+            dataset.push_back(instance);
+        } else {
+            cerr << "Warning: Instance with no features found. Skipping." << endl;
         }
     }
 
     return dataset;
-}
-
-double real_evaluation_function(const vector<Instance>& dataset, const vector<int>& feature_subset) {
-    return leave_one_out_validation(dataset, feature_subset);
 }
 
 // Forward Selection
@@ -198,16 +196,12 @@ void backward_elimination(int num_features, const vector<Instance>& dataset) {
     cout << "} with an accuracy of " << best_accuracy << "%" << endl;
 }
 
-
 int main() {
-    srand(static_cast<unsigned int>(time(0)));  // Seed random number generator
-    
     string file_name;
     cout << "Enter the dataset file name: ";
     cin >> file_name;
 
     vector<Instance> dataset = load_data(file_name);
-
     int num_features = dataset[0].features.size();
     cout << "Dataset loaded with " << num_features << " features and " << dataset.size() << " instances." << endl;
 
@@ -222,6 +216,7 @@ int main() {
     } else {
         cout << "Invalid choice!" << endl;
     }
+
     vector<int> test_features = {3, 5, 7};
     double test_accuracy = leave_one_out_validation(dataset, test_features);
     cout << "Accuracy using features {3, 5, 7}: " << test_accuracy << "%" << endl;
