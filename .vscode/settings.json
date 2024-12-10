@@ -60,6 +60,7 @@
     "iostream": "cpp",
     "cstdlib": "cpp",
     "limits": "cpp",
-    "vector": "cpp"
+    "vector": "cpp",
+    "ostream": "cpp"
   }
 }

@@ -7,8 +7,11 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+#include <chrono>  // For timing
+
 
 using namespace std;
+using namespace chrono;
 
 struct Instance {
     int class_label;
@@ -146,6 +149,8 @@ void forward_selection(int num_features, const vector<Instance>& dataset) {
     vector<int> best_overall_features;
     double best_overall_accuracy = 0.0;
 
+     auto start_time = high_resolution_clock::now();
+
     cout << "\nStarting search with no features selected." << endl;
     for (int i = 0; i < num_features; ++i) {
         double current_best_accuracy = 0.0;
@@ -182,11 +187,14 @@ void forward_selection(int num_features, const vector<Instance>& dataset) {
             cout << "} with accuracy " << best_accuracy << "%" << endl << endl;
         }
     }
-
+    auto end_time = high_resolution_clock::now();
+    auto duration_temp = end_time - start_time;
+    duration<double> duration = duration_temp;
     // Print the best overall feature set and accuracy
     cout << "Finished search!! The best feature subset is { ";
     for (int f : best_overall_features) cout << f << " ";
     cout << "} with an accuracy of " << best_overall_accuracy << "%" << endl;
+    cout << "Execution Time: " << duration.count() << " seconds." << endl;
 }
 
 // Backward Elimination
@@ -198,6 +206,8 @@ void backward_elimination(int num_features, const vector<Instance>& dataset) {
 
     double best_accuracy = leave_one_out_validation(dataset, current_features);
     vector<int> best_features = current_features;
+
+    auto start_time = high_resolution_clock::now();
 
     cout << "\nStarting search with all features selected: { ";
     for (int f : current_features) cout << f << " ";
@@ -233,9 +243,13 @@ void backward_elimination(int num_features, const vector<Instance>& dataset) {
         }
     }
 
+    auto end_time = high_resolution_clock::now();
+    auto duration_temp = end_time - start_time;
+    duration<double> duration = duration_temp;
     cout << "Finished search!! The best feature subset is { ";
     for (int f : best_features) cout << f << " ";
     cout << "} with an accuracy of " << best_accuracy << "%" << endl;
+    cout << "Execution Time: " << duration.count() << " seconds." << endl;
 }
 
 int main() {
@@ -259,9 +273,11 @@ int main() {
         cout << "Invalid choice!" << endl;
     }
 
-    vector<int> test_features = {3, 5, 7};
-    double test_accuracy = leave_one_out_validation(dataset, test_features);
-    cout << "Accuracy using features {3, 5, 7}: " << test_accuracy << "%" << endl;
-
+    vector<int> test_feature_one = {3, 5, 7};
+    vector<int> test_feature_two = {1, 15, 27};
+    double test_accuracy_one = leave_one_out_validation(dataset, test_feature_one);
+    cout << "Accuracy using features {3, 5, 7}: " << test_accuracy_one << "%" << endl;
+    double test_accuracy_two = leave_one_out_validation(dataset, test_feature_two);
+    cout << "Accuracy using features {1, 15, 27}: " << test_accuracy_two << "%" << endl;
     return 0;
 }
