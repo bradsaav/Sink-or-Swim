@@ -207,6 +207,9 @@ void backward_elimination(int num_features, const vector<Instance>& dataset) {
     double best_accuracy = leave_one_out_validation(dataset, current_features);
     vector<int> best_features = current_features;
 
+    vector<int> best_overall_features = current_features;
+    double best_overall_accuracy = best_accuracy;
+
     auto start_time = high_resolution_clock::now();
 
     cout << "\nStarting search with all features selected: { ";
@@ -237,6 +240,12 @@ void backward_elimination(int num_features, const vector<Instance>& dataset) {
             best_accuracy = current_best_accuracy;
             best_features = current_features;
 
+            if (best_accuracy > best_overall_accuracy) {
+                best_overall_accuracy = best_accuracy;
+                best_overall_features = best_features;
+            }
+
+
             cout << "Best feature set so far: { ";
             for (int f : best_features) cout << f << " ";
             cout << "} with accuracy " << best_accuracy << "%" << endl << endl;
@@ -247,8 +256,8 @@ void backward_elimination(int num_features, const vector<Instance>& dataset) {
     auto duration_temp = end_time - start_time;
     duration<double> duration = duration_temp;
     cout << "Finished search!! The best feature subset is { ";
-    for (int f : best_features) cout << f << " ";
-    cout << "} with an accuracy of " << best_accuracy << "%" << endl;
+    for (int f : best_overall_features) cout << f << " ";
+    cout << "} with an accuracy of " << best_overall_accuracy << "%" << endl;
     cout << "Execution Time: " << duration.count() << " seconds." << endl;
 }
 
